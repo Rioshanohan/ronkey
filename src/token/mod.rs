@@ -10,6 +10,16 @@ pub enum TokenType {
 
     ASSIGN,
     PLUS,
+    MINUS,
+    BANG,
+    ASTERISK,
+    SLASH,
+
+    LT,
+    GT,
+
+    EQ,
+    NOT_EQ,
 
     COMMA,
     SEMICOLON,
@@ -21,9 +31,22 @@ pub enum TokenType {
 
     FUNCTION,
     LET,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    RETURN,
 }
 
-pub const KEYWORDS: [(&str, TokenType); 2] = [("fn", TokenType::FUNCTION), ("let", TokenType::LET)];
+pub const KEYWORDS: [(&str, TokenType); 7] = [
+    ("fn", TokenType::FUNCTION),
+    ("let", TokenType::LET),
+    ("true", TokenType::TRUE),
+    ("false", TokenType::FALSE),
+    ("if", TokenType::IF),
+    ("else", TokenType::ELSE),
+    ("return", TokenType::RETURN),
+];
 
 pub fn lookup_ident(ident: &str) -> TokenType {
     for (keyword, token_type) in KEYWORDS.iter() {

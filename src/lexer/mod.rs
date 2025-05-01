@@ -27,20 +27,47 @@ impl Lexer {
         self.position = self.read_position;
         self.read_position += 1;
     }
+    fn peek_char(&mut self) -> u8 {
+        if self.read_position >= self.input.len() {
+            return 0;
+        } else {
+            return self.input.as_bytes()[self.read_position];
+        }
+    }
     pub fn next_token(&mut self) -> Token {
         let mut tok = Token::new(TokenType::ILLEGAL, &(self.ch as char).to_string());
 
         self.skip_whitespace();
 
         tok = match self.ch {
-            b'=' => Token::new(TokenType::ASSIGN, "="),
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::new(TokenType::EQ, "==")
+                } else {
+                    Token::new(TokenType::ASSIGN, "=")
+                }
+            }
+            b'+' => Token::new(TokenType::PLUS, "+"),
+            b'-' => Token::new(TokenType::MINUS, "-"),
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::new(TokenType::NOT_EQ, "!=")
+                } else {
+                    Token::new(TokenType::BANG, "!")
+                }
+            }
+            b'/' => Token::new(TokenType::SLASH, "/"),
+            b'*' => Token::new(TokenType::ASTERISK, "*"),
+            b'<' => Token::new(TokenType::LT, "<"),
+            b'>' => Token::new(TokenType::GT, ">"),
             b';' => Token::new(TokenType::SEMICOLON, ";"),
+            b',' => Token::new(TokenType::COMMA, ","),
             b'(' => Token::new(TokenType::LPAREN, "("),
             b')' => Token::new(TokenType::RPAREN, ")"),
             b'{' => Token::new(TokenType::LBRACE, "{"),
             b'}' => Token::new(TokenType::RBRACE, "}"),
-            b',' => Token::new(TokenType::COMMA, ","),
-            b'+' => Token::new(TokenType::PLUS, "+"),
             0 => Token::new(TokenType::EOF, ""),
             _ => {
                 if Self::is_letter(self.ch) {
@@ -58,7 +85,6 @@ impl Lexer {
         self.read_char();
         tok
     }
-
     fn skip_whitespace(&mut self) {
         while self.ch == b' ' || self.ch == b'\t' || self.ch == b'\n' || self.ch == b'\r' {
             self.read_char();
@@ -95,7 +121,19 @@ let add = fn(x, y) {
     x + y;
 };
 
-let result = add(five, ten);";
+let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+
+if (5 < 10) {
+    return true;
+} else {
+    return false;
+}
+
+10 == 10;
+10 != 9;
+";
     let tests: Vec<Token> = vec![
         Token::new(TokenType::LET, "let"),
         Token::new(TokenType::IDENT, "five"),
@@ -132,6 +170,43 @@ let result = add(five, ten);";
         Token::new(TokenType::COMMA, ","),
         Token::new(TokenType::IDENT, "ten"),
         Token::new(TokenType::RPAREN, ")"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::BANG, "!"),
+        Token::new(TokenType::MINUS, "-"),
+        Token::new(TokenType::SLASH, "/"),
+        Token::new(TokenType::ASTERISK, "*"),
+        Token::new(TokenType::INT, "5"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::INT, "5"),
+        Token::new(TokenType::LT, "<"),
+        Token::new(TokenType::INT, "10"),
+        Token::new(TokenType::GT, ">"),
+        Token::new(TokenType::INT, "5"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::IF, "if"),
+        Token::new(TokenType::LPAREN, "("),
+        Token::new(TokenType::INT, "5"),
+        Token::new(TokenType::LT, "<"),
+        Token::new(TokenType::INT, "10"),
+        Token::new(TokenType::RPAREN, ")"),
+        Token::new(TokenType::LBRACE, "{"),
+        Token::new(TokenType::RETURN, "return"),
+        Token::new(TokenType::TRUE, "true"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::RBRACE, "}"),
+        Token::new(TokenType::ELSE, "else"),
+        Token::new(TokenType::LBRACE, "{"),
+        Token::new(TokenType::RETURN, "return"),
+        Token::new(TokenType::FALSE, "false"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::RBRACE, "}"),
+        Token::new(TokenType::INT, "10"),
+        Token::new(TokenType::EQ, "=="),
+        Token::new(TokenType::INT, "10"),
+        Token::new(TokenType::SEMICOLON, ";"),
+        Token::new(TokenType::INT, "10"),
+        Token::new(TokenType::NOT_EQ, "!="),
+        Token::new(TokenType::INT, "9"),
         Token::new(TokenType::SEMICOLON, ";"),
         Token::new(TokenType::EOF, ""),
     ];
